@@ -136,6 +136,10 @@ function columns(){return tab==='orders'?[
 window.renderTable=renderTable;
 function renderTable(){
  let list=rowsOf(dataset(),tab),q=$('search').value.toLowerCase();
+ // Public/front panel must hide delivered orders. Admins can see every order.
+ if(tab==='orders'&&!currentUser){
+   list=list.filter(x=>x.order_status==='Order Place');
+ }
  list=list.filter(x=>columns().some(([k])=>String(x[k]??'').toLowerCase().includes(q)));
  $('count').textContent=tr('Showing ','দেখানো হচ্ছে ')+list.length+tr(' records','টি রেকর্ড');
  if(!list.length){$('tableArea').innerHTML='<div class="empty"><b>'+tr('No records found','কোনো তথ্য পাওয়া যায়নি')+'</b></div>';return}
