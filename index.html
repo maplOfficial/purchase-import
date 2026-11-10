@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Modina Auto Parts | Order & Import Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#102b46;--blue:#1769aa;--teal:#078b8b;--ink:#203448;--muted:#718096;--line:#e5ebf1;--bg:#f3f6fa;--green:#167a54;--red:#bd3944;--shadow:0 8px 28px #102b4610}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px Inter,"Hind Siliguri",sans-serif}body.bn{font-family:"Hind Siliguri",Inter,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}
+.top{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 clamp(14px,4vw,52px);position:sticky;top:0;z-index:10}.brand{display:flex;align-items:center;gap:13px}.brand img{width:165px;max-height:48px;object-fit:contain}.brand span{border-left:1px solid var(--line);padding-left:13px;color:var(--navy);font-size:12px;font-weight:800}.actions{display:flex;gap:8px;align-items:center}
+.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:700}.primary{background:var(--blue);color:white}.light{background:#edf3f8;color:var(--navy)}.outline{background:white;border:1px solid var(--line);color:var(--navy)}.danger{background:#fff0f0;color:var(--red)}.small{font-size:11px;padding:7px 9px}.lang{border:1px solid var(--line);border-radius:9px;background:#fff;padding:9px 11px;font-weight:700;color:var(--navy)}
+.hero{background:linear-gradient(115deg,#102b46,#17547b 65%,#078b8b);color:white;padding:37px clamp(16px,4vw,52px) 63px}.hero-in{max-width:1400px;margin:auto;display:flex;justify-content:space-between;align-items:center}.eyebrow{font-size:11px;letter-spacing:1.4px;color:#9ce3df;font-weight:800}.hero h1{font-size:clamp(25px,3vw,36px);margin:9px 0}.hero p{color:#d6e6ef;max-width:660px;line-height:1.7;margin:0}.mark{font-size:40px;border:1px solid #ffffff40;border-radius:24px;padding:18px 27px;background:#ffffff12}
+main{max-width:1400px;margin:-34px auto 0;padding:0 clamp(12px,3vw,38px) 40px;position:relative}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.stat,.panel{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}.stat{padding:18px}.stat label{color:var(--muted);font-size:12px;font-weight:600}.stat strong{display:block;font-size:27px;color:var(--navy);margin-top:10px}.panel{margin-top:19px;overflow:hidden}.panel-head{padding:17px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.panel-head h2{font-size:16px;color:var(--navy);margin:0}.sub{font-size:11px;color:var(--muted);margin-top:4px}.tabs{display:flex;background:#f0f4f8;padding:4px;border-radius:9px}.tab{border:0;background:none;color:#64788b;padding:9px 14px;border-radius:7px;font-weight:700;font-size:12px}.tab.active{background:#fff;color:var(--blue);box-shadow:0 2px 6px #102b4612}.tools{display:flex;gap:8px;align-items:center;width:100%}.search{flex:1;min-width:160px;border:1px solid var(--line);border-radius:9px;padding:10px 12px;outline:none}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;white-space:nowrap}th{text-align:left;background:#f8fafc;color:#6a7d8f;font-size:10px;text-transform:uppercase;letter-spacing:.4px;padding:13px 14px;border-bottom:1px solid var(--line)}td{font-size:12px;padding:12px 14px;border-bottom:1px solid #edf1f5;color:#344b60}tr:last-child td{border:0}tbody tr:hover{background:#fbfdff}.empty{text-align:center;padding:40px;color:var(--muted)}.empty b{display:block;color:var(--navy);margin-bottom:5px}.badge{border-radius:20px;padding:5px 8px;font-size:10px;font-weight:800;background:#edf3f8}.open{background:#eaf2ff;color:#2863a4}.transit{background:#fff3df;color:#99600b}.received{background:#e5f6ee;color:#17764f}.notice{background:#edf6fb;color:#48667d;border-radius:9px;padding:12px 14px;margin-top:14px;font-size:12px;line-height:1.6}.foot{text-align:center;color:#8b98a5;padding:25px;font-size:11px}
+.backdrop{display:none;position:fixed;inset:0;background:#0b1d2dcc;z-index:30;align-items:center;justify-content:center;padding:15px}.backdrop.show{display:flex}.modal{background:white;border-radius:15px;width:min(650px,100%);max-height:90vh;overflow:auto;box-shadow:0 25px 70px #0004}.modalhead,.modalfoot{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}.modalfoot{border-top:1px solid var(--line);border-bottom:0;justify-content:flex-end;gap:8px}.modalhead h3{margin:0;color:var(--navy)}.x{border:0;background:#eff3f7;border-radius:8px;width:30px;height:30px;font-size:19px}.modalbody{padding:20px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:11px;font-weight:700;color:#5d7184}.field input,.field select,.field textarea{border:1px solid #dce5ed;border-radius:8px;padding:10px;outline:none;width:100%;background:#fff}.field textarea{min-height:70px}.hint{font-size:11px;color:var(--muted);line-height:1.6;margin-top:10px}.toast{display:none;position:fixed;right:18px;bottom:18px;background:#173d5c;color:white;padding:13px 17px;border-radius:9px;z-index:60;max-width:90%}.toast.show{display:block}.hide{display:none!important}.admin{background:#e7f6ee;color:#17764f;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:800}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.brand img{width:135px}.mark{display:none}}@media(max-width:540px){.top{height:62px;padding:0 10px}.brand{gap:7px}.brand img{width:105px}.brand span{font-size:9px;padding-left:7px}.actions{gap:5px}.actions .btn{font-size:10px;padding:8px}.lang{font-size:10px;padding:8px}.hero{padding:27px 16px 54px}.hero h1{font-size:24px}.hero p{font-size:12px}main{padding:0 10px 30px}.stats{gap:8px}.stat{padding:13px}.stat strong{font-size:22px}.stat label{font-size:10px}.panel-head{padding:13px}.tabs{width:100%}.tab{flex:1;padding:9px 6px}.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.modalbody{padding:15px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand"><img src="https://modinaautopartsltd.com/_next/static/media/logo.40df2f61.svg" alt="Modina Auto Parts Ltd"><span>ORDER & IMPORT<br>MANAGEMENT</span></div><div class="actions"><span id="adminBadge" class="admin hide">ADMIN</span><button class="lang" id="langBtn" onclick="toggleLang()">বাংলা</button><button class="btn primary" id="loginBtn" onclick="openLogin()">Admin Login</button><button class="btn light hide" id="logoutBtn" onclick="logout()">Logout</button></div></header>
+<section class="hero"><div class="hero-in"><div><div class="eyebrow">MODINA AUTO PARTS LIMITED</div><h1 data-en="Order & Import Tracking Dashboard" data-bn="অর্ডার ও আমদানি ব্যবস্থাপনা ড্যাশবোর্ড">Order & Import Tracking Dashboard</h1><p data-en="Track purchase orders and import progress in one place. Information is updated from our management records." data-bn="এক জায়গা থেকে Purchase Order এবং Import-এর অগ্রগতি দেখুন। ম্যানেজমেন্ট রেকর্ড থেকে তথ্য আপডেট হয়।">Track purchase orders and import progress in one place. Information is updated from our management records.</p></div><div class="mark">⌁</div></div></section>
+<main><section class="stats"><div class="stat"><label>Total Orders</label><strong id="sOrders">—</strong></div><div class="stat"><label>Public Imports</label><strong id="sImports">—</strong></div><div class="stat"><label>In Transit</label><strong id="sTransit">—</strong></div><div class="stat"><label>LC Open</label><strong id="sLC">—</strong></div></section>
+<section class="panel"><div class="panel-head"><div><h2>Management Records</h2><div class="sub">Browse order and import information</div></div><div class="tabs"><button class="tab active" data-tab="orders" onclick="switchTab('orders')">Order Info</button><button class="tab" data-tab="imports" onclick="switchTab('imports')">Import Info</button></div></div><div class="panel-head" style="border-bottom:0;padding-top:12px;padding-bottom:12px"><div class="tools"><input class="search" id="search" type="search" placeholder="Search records..." oninput="renderTable()"><button class="btn primary hide" id="addBtn" onclick="openRecord()">＋ Add Record</button><button class="btn outline small" onclick="refresh()">↻ Refresh</button></div></div><div class="tablewrap" id="tableArea"><div class="empty">Connecting to Supabase…</div></div><div class="panel-head" style="border-top:1px solid var(--line);border-bottom:0"><span class="sub" id="count">—</span><span class="sub" id="updated"></span></div></section>
+<div class="notice">Privacy: “Received in Modina Warehouse” records are hidden from this public dashboard. The public API has its separate 24-hour visibility rule.</div><div class="foot">© <span id="year"></span> Modina Auto Parts Ltd. All rights reserved.</div></main>
+<div class="backdrop" id="loginModal" onclick="backdrop(event,'loginModal')"><div class="modal" style="max-width:410px"><div class="modalhead"><h3>Administrator Login</h3><button class="x" onclick="closeModal('loginModal')">×</button></div><form onsubmit="login(event)"><div class="modalbody"><div class="field"><label>Admin email</label><input id="email" type="email" value="admin@mapl.com" required autocomplete="username"></div><div class="field" style="margin-top:12px"><label>Admin password</label><input id="password" type="password" required autocomplete="current-password"></div><div class="hint">Use your Supabase Auth email and password. Never share your password.</div><div id="loginError" style="color:#bd3944;margin-top:8px;font-size:12px"></div></div><div class="modalfoot"><button type="button" class="btn outline" onclick="closeModal('loginModal')">Cancel</button><button class="btn primary" id="loginSubmit">Sign in</button></div></form></div></div>
+<div class="backdrop" id="recordModal" onclick="backdrop(event,'recordModal')"><div class="modal"><div class="modalhead"><h3 id="formTitle">Add record</h3><button class="x" onclick="closeModal('recordModal')">×</button></div><form onsubmit="save(event)"><div class="modalbody"><div class="grid" id="fields"></div></div><div class="modalfoot"><button type="button" class="btn outline" onclick="closeModal('recordModal')">Cancel</button><button class="btn primary" id="saveBtn">Save record</button></div></form></div></div><div class="toast" id="toast"></div>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+/* Public browser credentials only. Never put a service_role/secret key here. */
+const SUPABASE_URL = 'https://cecpftqzovnyknokmvhr.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_widUBU_grHRGsu81bn05KA_FXEjsfqo';
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+const ORDER_FIELDS = [
+ ['order_date','Order Date','date'],['order_number','Order Number','text'],
+ ['exporter_info','Exporter Info','text'],['brand_name','Brand Name','text'],
+ ['item_description','Item Description','textarea'],['qty','Qty','number'],
+ ['total_value','Total Value','number'],['net_weight','Net Weight','number']
+];
+const IMPORT_FIELDS = [
+ ['date','Date','date'],['brand','Brand','text'],['item_description','Item Description','textarea'],
+ ['item_qty','Item Qty','number'],['usd_value','USD Value','number'],['net_weight','Net Weight','number'],
+ ['order_number','Order Number','text'],['order_date','Order Date','date'],
+ ['checked_by','Checked By','text'],['checking_date','Checking Date','date'],
+ ['exporter_info','Exporter Info','text'],['lc_number','LC Number','text'],
+ ['lc_date','LC Date','date'],['import_status','Import Status','select',['LC Open','Transit','Received in Modina Warehouse']],
+ ['comment','Comment','textarea']
+];
+let tab='orders',pub={orders:[],imports:[]},adminData=null,currentUser=null,lang=localStorage.getItem('modinaLanguage')||'en',editId=null;
+const $=id=>document.getElementById(id);
+function tr(en,bn){return lang==='bn'?bn:en}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(s){$('toast').textContent=s;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),3500)}
+function show(id){$(id).classList.add('show')}function closeModal(id){$(id).classList.remove('show')}function backdrop(e,id){if(e.target.id===id)closeModal(id)}
+function language(){document.body.classList.toggle('bn',lang==='bn');document.querySelectorAll('[data-en][data-bn]').forEach(x=>x.textContent=lang==='bn'?x.dataset.bn:x.dataset.en);$('langBtn').textContent=lang==='bn'?'English':'বাংলা';$('search').placeholder=tr('Search records...','তথ্য খুঁজুন...')}
+window.toggleLang=()=>{lang=lang==='en'?'bn':'en';localStorage.setItem('modinaLanguage',lang);language();renderTable()};
+window.openLogin=()=>{$('loginError').textContent='';$('password').value='';show('loginModal')};
+window.closeModal=closeModal;window.backdrop=backdrop;
+window.switchTab=v=>{tab=v;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===v));$('search').value='';renderTable()};
+function rowsOf(data,key){let v=data?.[key];return Array.isArray(v)?v:[]}
+async function loadPublic(){
+ const {data,error}=await supabase.rpc('get_public_dashboard');
+ if(error)throw error;
+ // The SQL RPC returns {orders:[...], imports:[...]} as JSON.
+ return data||{orders:[],imports:[]};
+}
+async function loadAdmin(){
+ const {data:{user},error:authError}=await supabase.auth.getUser();
+ if(authError||!user)return null;
+ // RLS on both tables is the authoritative admin permission check.
+ const [o,i]=await Promise.all([
+  supabase.from('purchase_orders').select('*').order('created_at',{ascending:false}),
+  supabase.from('imports').select('*').order('created_at',{ascending:false})
+ ]);
+ if(o.error)throw o.error;if(i.error)throw i.error;
+ return {orders:o.data||[],imports:i.data||[]};
+}
+async function refresh(){
+ try{
+  pub=await loadPublic();
+  const {data:{session}}=await supabase.auth.getSession();
+  currentUser=session?.user||null;adminData=null;
+  if(currentUser){try{adminData=await loadAdmin()}catch(e){await supabase.auth.signOut();currentUser=null;throw new Error('Admin permission check failed: '+e.message)}}
+  adminUI();stats();renderTable();$('updated').textContent=tr('Updated: ','আপডেট: ')+new Date().toLocaleString(lang==='bn'?'bn-BD':'en-GB');
+ }catch(e){$('tableArea').innerHTML='<div class="empty"><b>Could not load records</b>'+esc(e.message||e)+'</div>'}
+}
+function dataset(){return adminData||pub}
+function stats(){const d=dataset(),o=rowsOf(d,'orders'),i=rowsOf(d,'imports');$('sOrders').textContent=o.length;$('sImports').textContent=i.length;$('sTransit').textContent=i.filter(x=>x.import_status==='Transit').length;$('sLC').textContent=i.filter(x=>x.import_status==='LC Open').length}
+function columns(){return tab==='orders'?[
+ ['order_date','Order Date'],['order_number','Order Number'],['exporter_info','Exporter Info'],['brand_name','Brand Name'],['item_description','Item Description'],['qty','Qty'],['total_value','Total Value'],['net_weight','Net Weight']
+]:[
+ ['date','Date'],['brand','Brand'],['item_description','Item Description'],['item_qty','Item Qty'],['usd_value','USD Value'],['net_weight','Net Weight'],['order_number','Order Number'],['order_date','Order Date'],['checked_by','Checked By'],['checking_date','Checking Date'],['exporter_info','Exporter Info'],['lc_number','LC Number'],['lc_date','LC Date'],['import_status','Import Status'],['comment','Comment']
+]}
+window.renderTable=renderTable;
+function renderTable(){
+ let list=rowsOf(dataset(),tab),q=$('search').value.toLowerCase();
+ list=list.filter(x=>columns().some(([k])=>String(x[k]??'').toLowerCase().includes(q)));
+ $('count').textContent=tr('Showing ','দেখানো হচ্ছে ')+list.length+tr(' records','টি রেকর্ড');
+ if(!list.length){$('tableArea').innerHTML='<div class="empty"><b>'+tr('No records found','কোনো তথ্য পাওয়া যায়নি')+'</b></div>';return}
+ let heads=['Sl',...columns().map(x=>x[1])];if(currentUser)heads.push('Actions');
+ let h='<table><thead><tr>'+heads.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr></thead><tbody>';
+ list.forEach((r,n)=>{h+='<tr><td>'+(n+1)+'</td>'+columns().map(([k])=>{let v=r[k]??'';if(k==='import_status'){let c=v==='LC Open'?'open':v==='Transit'?'transit':'received';return '<td><span class="badge '+c+'">'+esc(v)+'</span></td>'}return '<td>'+esc(v)+'</td>'}).join('');if(currentUser)h+='<td><button class="btn light small" data-edit="'+esc(r.id)+'">Edit</button> <button class="btn danger small" data-delete="'+esc(r.id)+'">Delete</button></td>';h+='</tr>'});
+ $('tableArea').innerHTML=h+'</tbody></table>';
+ $('tableArea').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openRecord(b.dataset.edit));
+ $('tableArea').querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>del(b.dataset.delete));
+}
+function adminUI(){const on=!!currentUser;$('loginBtn').classList.toggle('hide',on);$('logoutBtn').classList.toggle('hide',!on);$('adminBadge').classList.toggle('hide',!on);$('addBtn').classList.toggle('hide',!on)}
+window.openRecord=(id=null)=>{
+ if(!currentUser)return openLogin();editId=id;
+ const fields=tab==='orders'?ORDER_FIELDS:IMPORT_FIELDS;
+ const rec=id?rowsOf(adminData,tab).find(x=>String(x.id)===String(id)):null;
+ $('formTitle').textContent=tr(id?'Edit record':'Add new record',id?'তথ্য সম্পাদনা':'নতুন তথ্য যোগ');
+ $('fields').innerHTML=fields.map(([key,label,type,opts])=>{
+  const val=rec?.[key]??'',idAttr='f_'+key;
+  if(type==='select')return '<div class="field"><label>'+esc(label)+'</label><select id="'+idAttr+'" required><option value="">Select status</option>'+opts.map(v=>'<option '+(val===v?'selected':'')+'>'+esc(v)+'</option>').join('')+'</select></div>';
+  if(type==='textarea')return '<div class="field full"><label>'+esc(label)+'</label><textarea id="'+idAttr+'">'+esc(val)+'</textarea></div>';
+  return '<div class="field"><label>'+esc(label)+'</label><input id="'+idAttr+'" type="'+type+'" value="'+esc(type==='date'?String(val).slice(0,10):val)+'" '+(type==='number'?'step="any"':'')+'></div>';
+ }).join('');
+ show('recordModal');
+};
+window.save=async e=>{
+ e.preventDefault();if(!currentUser)return;
+ const fields=tab==='orders'?ORDER_FIELDS:IMPORT_FIELDS,payload={};
+ fields.forEach(([key])=>{const v=$('f_'+key).value;payload[key]=v===''?null:(['qty','total_value','net_weight','item_qty','usd_value'].includes(key)?Number(v):v)});
+ const btn=$('saveBtn');btn.disabled=true;
+ try{
+  const table=tab==='orders'?'purchase_orders':'imports';
+  const query=editId?supabase.from(table).update(payload).eq('id',editId):supabase.from(table).insert(payload);
+  const {error}=await query;if(error)throw error;
+  closeModal('recordModal');await refresh();toast(tr('Record saved','তথ্য সেভ হয়েছে'));
+ }catch(e){toast(e.message||String(e))}finally{btn.disabled=false}
+};
+window.del=async id=>{
+ if(!confirm(tr('Delete this record?','এই তথ্যটি মুছে ফেলবেন?')))return;
+ try{const {error}=await supabase.from(tab==='orders'?'purchase_orders':'imports').delete().eq('id',id);if(error)throw error;await refresh();toast(tr('Record deleted','তথ্য মুছে ফেলা হয়েছে'))}catch(e){toast(e.message||String(e))}
+};
+window.login=async e=>{
+ e.preventDefault();const b=$('loginSubmit');b.disabled=true;
+ try{
+  const {data,error}=await supabase.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});
+  if(error)throw error;
+  currentUser=data.user;adminData=await loadAdmin();
+  closeModal('loginModal');adminUI();stats();renderTable();toast(tr('Login successful','লগইন সফল হয়েছে'));
+ }catch(x){$('loginError').textContent=x.message;await supabase.auth.signOut();currentUser=null;adminData=null;adminUI()}finally{b.disabled=false}
+};
+window.logout=async()=>{await supabase.auth.signOut();currentUser=null;adminData=null;adminUI();await refresh();toast(tr('Logged out','লগআউট হয়েছে'))};
+$('year').textContent=new Date().getFullYear();language();adminUI();await refresh();
+supabase.auth.onAuthStateChange(()=>{setTimeout(()=>refresh(),0)});
+</script>
+</body></html>
