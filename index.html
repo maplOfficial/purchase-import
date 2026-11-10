@@ -59,7 +59,7 @@ main{max-width:1400px;margin:-34px auto 0;padding:0 clamp(12px,3vw,38px) 40px;po
 <body>
 <header class="top"><div class="brand"><img src="https://modinaautopartsltd.com/_next/static/media/logo.40df2f61.svg" alt="Modina Auto Parts Ltd"><span>ORDER & IMPORT<br>MANAGEMENT</span></div><div class="actions"><span id="adminBadge" class="admin hide">ADMIN</span><button class="lang" id="langBtn" onclick="toggleLang()">বাংলা</button><button class="btn primary" id="loginBtn" onclick="openLogin()">Admin Login</button><button class="btn light hide" id="logoutBtn" onclick="logout()">Logout</button></div></header>
 <section class="hero"><div class="hero-in"><div><div class="eyebrow">MODINA AUTO PARTS LIMITED</div><h1 data-en="Order & Import Tracking Dashboard" data-bn="অর্ডার ও আমদানি ব্যবস্থাপনা ড্যাশবোর্ড">Order & Import Tracking Dashboard</h1><p data-en="Track purchase orders and import progress in one place. Information is updated from our management records." data-bn="এক জায়গা থেকে Purchase Order এবং Import-এর অগ্রগতি দেখুন। ম্যানেজমেন্ট রেকর্ড থেকে তথ্য আপডেট হয়।">Track purchase orders and import progress in one place. Information is updated from our management records.</p></div><div class="harbor" aria-label="Animated container ship and port crane"><span class="sun"></span><div class="crane"></div><div class="containers"><i></i><i></i><i></i></div><div class="ship"></div><div class="water"></div></div></div></section>
-<main><section class="stats"><div class="stat"><label>Total Orders</label><strong id="sOrders">—</strong></div><div class="stat"><label>Public Imports</label><strong id="sImports">—</strong></div><div class="stat"><label>In Transit</label><strong id="sTransit">—</strong></div><div class="stat"><label>LC Open</label><strong id="sLC">—</strong></div></section>
+<main><section class="stats"><div class="stat"><label>Total Orders</label><strong id="sOrders">—</strong></div><div class="stat"><label>PI &amp; Packing Receive from Exporter</label><strong id="sPI">—</strong></div><div class="stat"><label>LC Open</label><strong id="sLC">—</strong></div><div class="stat"><label>In Transit</label><strong id="sTransit">—</strong></div></section>
 <section class="panel"><div class="panel-head"><div><h2>Management Records</h2><div class="sub">Browse order and import information</div></div><div class="tabs"><button class="tab active" data-tab="orders" onclick="switchTab('orders')">Order Info</button><button class="tab" data-tab="imports" onclick="switchTab('imports')">Import Info</button></div></div><div class="panel-head" style="border-bottom:0;padding-top:12px;padding-bottom:12px"><div class="tools"><input class="search" id="search" type="search" placeholder="Search records..." oninput="renderTable()"><button class="btn primary hide" id="addBtn" onclick="openRecord()">＋ Add Record</button><button class="btn outline small" onclick="refresh()">↻ Refresh</button></div></div><div class="tablewrap" id="tableArea"><div class="empty">Connecting to Supabase…</div></div><div class="panel-head" style="border-top:1px solid var(--line);border-bottom:0"><span class="sub" id="count">—</span><span class="sub" id="updated"></span></div></section>
 <div class="notice">Privacy: “Received in Modina Warehouse” records are hidden from this public dashboard. The public API has its separate 24-hour visibility rule.</div><div class="foot">© <span id="year"></span> Modina Auto Parts Ltd. All rights reserved.</div></main>
 <div class="backdrop" id="loginModal" onclick="backdrop(event,'loginModal')"><div class="modal" style="max-width:410px"><div class="modalhead"><h3>Administrator Login</h3><button class="x" onclick="closeModal('loginModal')">×</button></div><form onsubmit="login(event)"><div class="modalbody"><div class="field"><label>Admin email</label><input id="email" type="email" value="admin@mapl.com" required autocomplete="username"></div><div class="field" style="margin-top:12px"><label>Admin password</label><input id="password" type="password" required autocomplete="current-password"></div><div class="hint">Use your Supabase Auth email and password. Never share your password.</div><div id="loginError" style="color:#bd3944;margin-top:8px;font-size:12px"></div></div><div class="modalfoot"><button type="button" class="btn outline" onclick="closeModal('loginModal')">Cancel</button><button class="btn primary" id="loginSubmit">Sign in</button></div></form></div></div>
@@ -79,7 +79,7 @@ const ORDER_FIELDS = [
  ['total_value','Total Value','number'],['net_weight','Net Weight','number']
 ];
 const IMPORT_FIELDS = [
- ['date','Date','date'],['brand','Brand','text'],['item_description','Item Description','textarea'],
+ ['brand','Brand','text'],['item_description','Item Description','textarea'],
  ['item_qty','Item Qty','number'],['usd_value','USD Value','number'],['net_weight','Net Weight','number'],
  ['order_number','Order Number','text'],['order_date','Order Date','date'],
  ['checked_by','Checked By','text'],['checking_date','Checking Date','date'],
@@ -126,11 +126,11 @@ async function refresh(){
  }catch(e){$('tableArea').innerHTML='<div class="empty"><b>Could not load records</b>'+esc(e.message||e)+'</div>'}
 }
 function dataset(){return adminData||pub}
-function stats(){const d=dataset(),o=rowsOf(d,'orders'),i=rowsOf(d,'imports');$('sOrders').textContent=o.length;$('sImports').textContent=i.length;$('sTransit').textContent=i.filter(x=>x.import_status==='Transit').length;$('sLC').textContent=i.filter(x=>x.import_status==='LC Open').length}
+function stats(){const d=dataset(),o=rowsOf(d,'orders'),i=rowsOf(d,'imports');$('sOrders').textContent=o.length;$('sPI').textContent=i.filter(x=>x.import_status==='PI & Packing List received from exporter').length;$('sLC').textContent=i.filter(x=>x.import_status==='LC Open').length;$('sTransit').textContent=i.filter(x=>x.import_status==='Transit').length}
 function columns(){return tab==='orders'?[
  ['order_date','Order Date'],['order_number','Order Number'],['exporter_info','Exporter Info'],['brand_name','Brand Name'],['item_description','Item Description'],['qty','Qty'],['total_value','Total Value'],['net_weight','Net Weight']
 ]:[
- ['date','Date'],['brand','Brand'],['item_description','Item Description'],['item_qty','Item Qty'],['usd_value','USD Value'],['net_weight','Net Weight'],['order_number','Order Number'],['order_date','Order Date'],['checked_by','Checked By'],['checking_date','Checking Date'],['exporter_info','Exporter Info'],['lc_number','LC Number'],['lc_date','LC Date'],['import_status','Import Status'],['comment','Comment']
+ ['brand','Brand'],['item_description','Item Description'],['item_qty','Item Qty'],['usd_value','USD Value'],['net_weight','Net Weight'],['order_number','Order Number'],['order_date','Order Date'],['checked_by','Checked By'],['checking_date','Checking Date'],['exporter_info','Exporter Info'],['lc_number','LC Number'],['lc_date','LC Date'],['import_status','Import Status'],['comment','Comment']
 ]}
 window.renderTable=renderTable;
 function renderTable(){
@@ -170,10 +170,26 @@ window.openRecord=(id=null)=>{
   if(type==='textarea')return '<div class="field full"><label>'+esc(label)+'</label><textarea id="'+idAttr+'">'+esc(val)+'</textarea></div>';
   return '<div class="field"><label>'+esc(label)+'</label><input id="'+idAttr+'" type="'+type+'" value="'+esc(type==='date'?String(val).slice(0,10):val)+'" '+(type==='number'?'step="any"':'')+'></div>';
  }).join('');
+ // LC Date is mandatory only when LC Number has been entered.
+ if(tab==='imports'){
+  const lcNumber=$('f_lc_number'),lcDate=$('f_lc_date');
+  const syncLCDateRequired=()=>{
+   const hasLC=!!lcNumber.value.trim();
+   lcDate.required=hasLC;
+   lcDate.setCustomValidity(hasLC && !lcDate.value ? tr('LC Date is required when LC Number is entered.','LC Number দেওয়া হলে LC Date দিতে হবে।') : '');
+  };
+  lcNumber.addEventListener('input',syncLCDateRequired);
+  lcDate.addEventListener('change',syncLCDateRequired);
+  syncLCDateRequired();
+ }
  show('recordModal');
 };
 window.save=async e=>{
  e.preventDefault();if(!currentUser)return;
+ if(tab==='imports'){
+  const lcNumber=$('f_lc_number').value.trim(),lcDate=$('f_lc_date').value;
+  if(lcNumber && !lcDate){$('f_lc_date').focus();toast(tr('LC Date is required when LC Number is entered.','LC Number দেওয়া হলে LC Date দিতে হবে।'));return;}
+ }
  const fields=tab==='orders'?ORDER_FIELDS:IMPORT_FIELDS,payload={};
  fields.forEach(([key])=>{const v=$('f_'+key).value;payload[key]=v===''?null:(['qty','total_value','net_weight','item_qty','usd_value'].includes(key)?Number(v):v)});
  const btn=$('saveBtn');btn.disabled=true;
