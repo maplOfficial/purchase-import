@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modina Auto Parts | Reports</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--navy:#10243a;--blue:#1769aa;--bg:#f3f6fa;--ink:#172536;--muted:#66778a;--line:#dce4ed;--white:#fff;--green:#13845b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Arial,sans-serif}
+header{background:linear-gradient(120deg,#10243a,#1c527d);color:white;padding:22px clamp(16px,4vw,42px)}
+.head{max-width:1400px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{font-size:20px;font-weight:800;letter-spacing:.2px}.sub{opacity:.8;font-size:13px}
+main{max-width:1400px;margin:24px auto;padding:0 16px 40px}
+.panel{background:white;border:1px solid var(--line);border-radius:15px;padding:20px;margin-bottom:18px;box-shadow:0 5px 20px #18324b0a}
+h1{font-size:25px;margin:0 0 5px}h2{font-size:17px;margin:0 0 14px}
+.muted{color:var(--muted)}.login{max-width:440px;margin:55px auto}
+input,select,button{font:inherit;border-radius:9px;padding:11px 12px;border:1px solid #cbd6e1;background:#fff;color:var(--ink);min-height:43px}
+input,select{width:100%}label{display:block;font-size:13px;font-weight:700;margin:0 0 6px}
+.field{min-width:150px;flex:1}.filters{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+button{background:var(--blue);border:0;color:#fff;font-weight:700;cursor:pointer;padding:11px 16px}
+button.secondary{background:#e9f0f7;color:#17466e;border:1px solid #d5e1ec}
+button.dark{background:#24384d}.actions{display:flex;gap:9px;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}
+.stat{background:#f7fafd;border:1px solid var(--line);padding:14px;border-radius:12px}.stat small{color:var(--muted)}.stat strong{display:block;font-size:23px;margin-top:5px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tabs button{background:#e8eef5;color:#27445e}.tabs button.active{background:var(--blue);color:white}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;min-width:850px;background:#fff}th,td{padding:11px 12px;text-align:left;border-bottom:1px solid #e8edf2;white-space:nowrap;font-size:13px}th{background:#f2f6fa;color:#30465b;position:sticky;top:0;z-index:1}tr:last-child td{border-bottom:0}
+.status{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf3f8;font-size:12px}
+.notice{padding:11px 13px;border-radius:9px;background:#fff7e6;color:#76520b;margin-top:12px;font-size:13px}
+.hidden{display:none!important}.right{margin-left:auto}.error{color:#b42318;font-size:13px;margin-top:8px;white-space:pre-wrap}
+@media(max-width:700px){header{padding:18px 15px}main{margin:15px auto}.panel{padding:15px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}h1{font-size:21px}.filters .field{min-width:calc(50% - 8px)}}
+@media print{body{background:#fff;font-size:11px}header{background:#fff!important;color:#000;padding:0 0 12px}.sub{color:#555}.no-print,.login{display:none!important}main{max-width:none;margin:0;padding:0}.panel{border:0;box-shadow:none;padding:8px 0;margin:0}.table-wrap{overflow:visible;border:0}table{min-width:0;width:100%;font-size:9px}th,td{font-size:9px;padding:5px 4px;white-space:normal;overflow-wrap:anywhere}th{position:static}.stats{grid-template-columns:repeat(4,1fr);margin:8px 0}.stat{padding:7px}.stat strong{font-size:15px}h1{font-size:18px}h2{font-size:13px}}
+</style>
+</head>
+<body>
+<header><div class="head"><div><div class="brand">MODINA AUTO PARTS LTD.</div><div class="sub">ADMIN REPORT CENTER</div></div><div class="actions no-print"><span id="userLabel" class="sub"></span><button id="logoutBtn" class="secondary hidden">Logout</button></div></div></header>
+<main>
+<section id="loginPanel" class="panel login">
+<h1>Admin Login</h1><p class="muted">Sign in to view confidential company reports.</p>
+<form id="loginForm">
+<div style="margin:15px 0"><label for="email">Admin Email</label><input id="email" type="email" value="admin@mapl.com" required autocomplete="username"></div>
+<div style="margin:15px 0"><label for="password">Password</label><input id="password" type="password" required autocomplete="current-password"></div>
+<button type="submit" style="width:100%">Login & View Reports</button><div id="loginError" class="error"></div>
+</form>
+</section>
+<section id="reportApp" class="hidden">
+<div class="panel">
+<div class="filters no-print">
+<div class="field"><label for="fromDate">From Date</label><input id="fromDate" type="date"></div>
+<div class="field"><label for="toDate">To Date</label><input id="toDate" type="date"></div>
+<div class="field"><label for="search">Search</label><input id="search" placeholder="Brand, order, exporter, LC..."></div>
+<div class="field"><label for="statusFilter">Import Status</label><select id="statusFilter"><option value="">All Statuses</option><option>PI & Packing List received from exporter</option><option>LC Open</option><option>Transit</option><option>Received in Modina Warehouse</option></select></div>
+<div class="actions"><button id="applyBtn">Apply Filters</button><button id="resetBtn" class="secondary">Reset</button></div>
+</div>
+<div class="actions no-print" style="margin-top:14px"><button id="printBtn">Print / Save PDF</button><button id="csvBtn" class="secondary">Export Excel (.xlsx)</button><button id="refreshBtn" class="secondary">Refresh Data</button></div>
+<div id="loadError" class="error"></div>
+</div>
+<div class="stats">
+<div class="stat"><small>Purchase Orders</small><strong id="orderCount">0</strong></div>
+<div class="stat"><small>Import Records</small><strong id="importCount">0</strong></div>
+<div class="stat"><small>Total PO Value</small><strong id="poValue">0</strong></div>
+<div class="stat"><small>Total Import USD</small><strong id="importValue">0</strong></div>
+</div>
+<div class="panel">
+<h1>Company Reports</h1><p class="muted" id="reportDate">All records • Filter by date or keyword</p>
+<div class="tabs no-print"><button class="active" data-tab="all">Full Report</button><button data-tab="orders">Purchase Orders</button><button data-tab="imports">Import Report</button></div>
+<div id="ordersSection"><h2>Purchase Order Report</h2><div class="table-wrap"><table><thead><tr><th>#</th><th>Order Date</th><th>Order Number</th><th>Exporter</th><th>Brand</th><th>Item Description</th><th>Qty</th><th>Total Value</th><th>Net Weight</th></tr></thead><tbody id="ordersBody"></tbody></table></div></div>
+<div id="importsSection" style="margin-top:22px"><h2>Import Report</h2><div class="table-wrap"><table><thead><tr><th>#</th><th>Import Date</th><th>Brand</th><th>Item Description</th><th>Qty</th><th>USD Value</th><th>Net Weight</th><th>Order No.</th><th>LC Number</th><th>LC Date</th><th>Status</th><th>Comment</th></tr></thead><tbody id="importsBody"></tbody></table></div></div>
+<div id="emptyMsg" class="muted hidden" style="padding:18px 0">No records match the selected filters.</div>
+</div>
+</section>
+</main>
+<script>
+const SUPABASE_URL = 'https://cecpftqzovnyknokmvhr.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_widUBU_grHRGsu81bn05KA_FXEjsfqo';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let orders=[], imports=[], visibleOrders=[], visibleImports=[], activeTab='all';
+const $=id=>document.getElementById(id);
+const val=(v)=>v===null||v===undefined?'':String(v);
+const fmt=(v)=>Number(v||0).toLocaleString('en-US',{maximumFractionDigits:2});
+function esc(s){return val(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function showApp(user){$('loginPanel').classList.add('hidden');$('reportApp').classList.remove('hidden');$('logoutBtn').classList.remove('hidden');$('userLabel').textContent=user.email||'Admin';}
+async function loadData(){
+ $('loadError').textContent='Loading report data...';
+ try{
+  const [o,i]=await Promise.all([
+   db.from('purchase_orders').select('*').order('order_date',{ascending:false}),
+   db.from('imports').select('*').order('import_date',{ascending:false})
+  ]);
+  if(o.error) throw o.error;if(i.error) throw i.error;
+  orders=o.data||[];imports=i.data||[];applyFilters();
+  $('loadError').textContent='';
+ }catch(e){$('loadError').textContent='Could not load reports: '+(e.message||e); }
+}
+function withinDate(date,from,to){if(!date)return !from&&!to;const d=String(date).slice(0,10);return (!from||d>=from)&&(!to||d<=to);}
+function applyFilters(){
+ const from=$('fromDate').value,to=$('toDate').value,q=$('search').value.trim().toLowerCase(),status=$('statusFilter').value;
+ visibleOrders=orders.filter(r=>withinDate(r.order_date,from,to)&&(!q||[r.order_number,r.exporter_info,r.brand_name,r.item_description].some(x=>val(x).toLowerCase().includes(q))));
+ visibleImports=imports.filter(r=>withinDate(r.import_date,from,to)&&(!status||r.import_status===status)&&(!q||[r.brand,r.item_description,r.order_number,r.exporter_info,r.lc_number,r.comment,r.import_status].some(x=>val(x).toLowerCase().includes(q))));
+ render();
+}
+function render(){
+ $('orderCount').textContent=visibleOrders.length;$('importCount').textContent=visibleImports.length;
+ $('poValue').textContent=fmt(visibleOrders.reduce((s,r)=>s+Number(r.total_value||0),0));
+ $('importValue').textContent=fmt(visibleImports.reduce((s,r)=>s+Number(r.usd_value||0),0));
+ $('reportDate').textContent=`Filtered report • ${new Date().toLocaleString()}`;
+ $('ordersBody').innerHTML=visibleOrders.map((r,n)=>`<tr><td>${n+1}</td><td>${esc(r.order_date)}</td><td>${esc(r.order_number)}</td><td>${esc(r.exporter_info)}</td><td>${esc(r.brand_name)}</td><td>${esc(r.item_description)}</td><td>${esc(r.qty)}</td><td>${esc(r.total_value)}</td><td>${esc(r.net_weight)}</td></tr>`).join('');
+ $('importsBody').innerHTML=visibleImports.map((r,n)=>`<tr><td>${n+1}</td><td>${esc(r.import_date)}</td><td>${esc(r.brand)}</td><td>${esc(r.item_description)}</td><td>${esc(r.item_qty)}</td><td>${esc(r.usd_value)}</td><td>${esc(r.net_weight)}</td><td>${esc(r.order_number)}</td><td>${esc(r.lc_number)}</td><td>${esc(r.lc_date)}</td><td><span class="status">${esc(r.import_status)}</span></td><td>${esc(r.comment)}</td></tr>`).join('');
+ $('ordersSection').classList.toggle('hidden',activeTab==='imports');$('importsSection').classList.toggle('hidden',activeTab==='orders');
+ $('emptyMsg').classList.toggle('hidden',visibleOrders.length+visibleImports.length>0);
+}
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='Signing in...';const {data,error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error){$('loginError').textContent=error.message;return;}showApp(data.user);await loadData();});
+$('logoutBtn').addEventListener('click',async()=>{await db.auth.signOut();location.reload();});
+$('applyBtn').onclick=applyFilters;$('search').addEventListener('keydown',e=>{if(e.key==='Enter')applyFilters();});
+$('resetBtn').onclick=()=>{$('fromDate').value='';$('toDate').value='';$('search').value='';$('statusFilter').value='';applyFilters();};
+$('refreshBtn').onclick=loadData;$('printBtn').onclick=()=>window.print();
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{activeTab=b.dataset.tab;document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));render();});
+$('csvBtn').onclick=()=>{
+ if(!window.XLSX){$('loadError').textContent='Excel library could not load. Please check your internet connection and try again.';return;}
+ const fullRows=[
+  ['Report Type','Date','Order Number','Exporter','Brand','Item Description','Quantity','Value (USD)','Net Weight','LC Number','LC Date','Import Status','Comment'],
+  ...visibleOrders.map(r=>['Purchase Order',r.order_date,r.order_number,r.exporter_info,r.brand_name,r.item_description,r.qty,r.total_value,r.net_weight,'','','','']),
+  ...visibleImports.map(r=>['Import',r.import_date,r.order_number,r.exporter_info,r.brand,r.item_description,r.item_qty,r.usd_value,r.net_weight,r.lc_number,r.lc_date,r.import_status,r.comment])
+ ];
+ const orderRows=[
+  ['Order Date','Order Number','Exporter Info','Brand Name','Item Description','Qty','Total Value','Net Weight'],
+  ...visibleOrders.map(r=>[r.order_date,r.order_number,r.exporter_info,r.brand_name,r.item_description,r.qty,r.total_value,r.net_weight])
+ ];
+ const importRows=[
+  ['Import Date','Brand','Item Description','Item Qty','USD Value','Net Weight','Order Number','Order Date','Checked By','Checking Date','Exporter Info','LC Number','LC Date','Import Status','Comment'],
+  ...visibleImports.map(r=>[r.import_date,r.brand,r.item_description,r.item_qty,r.usd_value,r.net_weight,r.order_number,r.order_date,r.checked_by,r.checking_date,r.exporter_info,r.lc_number,r.lc_date,r.import_status,r.comment])
+ ];
+ const wb=XLSX.utils.book_new();
+ const addSheet=(name,rows)=>{const ws=XLSX.utils.aoa_to_sheet(rows);ws['!autofilter']={ref:ws['!ref']};ws['!cols']=rows[0].map((h,i)=>({wch:Math.min(34,Math.max(14,String(h||'').length+3))}));XLSX.utils.book_append_sheet(wb,ws,name);};
+ addSheet('Full Report',fullRows);
+ addSheet('Purchase Orders',orderRows);
+ addSheet('Import Report',importRows);
+ XLSX.writeFile(wb,'Modina_Full_Report.xlsx');
+ $('loadError').textContent='';
+};
+(async()=>{const {data:{session}}=await db.auth.getSession();if(session){showApp(session.user);await loadData();}})();
+</script>
+</body></html>
