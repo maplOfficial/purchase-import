@@ -21,7 +21,7 @@ input,select{width:100%}label{display:block;font-size:13px;font-weight:700;margi
 .field{min-width:150px;flex:1}.filters{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
 button{background:var(--blue);border:0;color:#fff;font-weight:700;cursor:pointer;padding:11px 16px}
 button.secondary{background:#e9f0f7;color:#17466e;border:1px solid #d5e1ec}
-button.dark{background:#24384d}.actions{display:flex;gap:9px;flex-wrap:wrap}
+button.dark{background:#24384d}.actions{display:flex;gap:9px;flex-wrap:wrap}.admin-link{display:inline-flex;align-items:center;justify-content:center;min-height:43px;padding:10px 15px;border-radius:9px;background:#ffffff;color:#17466e;text-decoration:none;font-weight:700;border:1px solid #d5e1ec}.admin-link:hover{background:#e9f0f7}
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}
 .stat{background:#f7fafd;border:1px solid var(--line);padding:14px;border-radius:12px}.stat small{color:var(--muted)}.stat strong{display:block;font-size:23px;margin-top:5px}
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tabs button{background:#e8eef5;color:#27445e}.tabs button.active{background:var(--blue);color:white}
@@ -35,7 +35,7 @@ table{width:100%;border-collapse:collapse;min-width:850px;background:#fff}th,td{
 </style>
 </head>
 <body>
-<header><div class="head"><div><div class="brand">MODINA AUTO PARTS LTD.</div><div class="sub">ADMIN REPORT CENTER</div></div><div class="actions no-print"><span id="userLabel" class="sub"></span><button id="logoutBtn" class="secondary hidden">Logout</button></div></div></header>
+<header><div class="head"><div><div class="brand">MODINA AUTO PARTS LTD.</div><div class="sub">ADMIN REPORT CENTER</div></div><div class="actions no-print"><a class="admin-link" href="./index.html">← Admin Panel</a><span id="userLabel" class="sub"></span><button id="logoutBtn" class="secondary hidden">Logout</button></div></div></header>
 <main>
 <section id="loginPanel" class="panel login">
 <h1>Admin Login</h1><p class="muted">Sign in to view confidential company reports.</p>
