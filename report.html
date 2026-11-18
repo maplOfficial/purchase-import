@@ -27,7 +27,7 @@ button.dark{background:#24384d}.actions{display:flex;gap:9px;flex-wrap:wrap}.adm
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tabs button{background:#e8eef5;color:#27445e}.tabs button.active{background:var(--blue);color:white}
 .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px}
 table{width:100%;border-collapse:collapse;min-width:850px;background:#fff}th,td{padding:11px 12px;text-align:left;border-bottom:1px solid #e8edf2;white-space:nowrap;font-size:13px}th{background:#f2f6fa;color:#30465b;position:sticky;top:0;z-index:1}tr:last-child td{border-bottom:0}
-.status{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf3f8;font-size:12px}
+.status{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf3f8;font-size:12px}.concern-name{display:inline-block;padding:5px 9px;border-radius:7px;background:#452080;color:#fff;font-weight:800}
 .notice{padding:11px 13px;border-radius:9px;background:#fff7e6;color:#76520b;margin-top:12px;font-size:13px}
 .hidden{display:none!important}.right{margin-left:auto}.error{color:#b42318;font-size:13px;margin-top:8px;white-space:pre-wrap}
 @media(max-width:700px){header{padding:18px 15px}main{margin:15px auto}.panel{padding:15px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}h1{font-size:21px}.filters .field{min-width:calc(50% - 8px)}}
@@ -50,8 +50,9 @@ table{width:100%;border-collapse:collapse;min-width:850px;background:#fff}th,td{
 <div class="filters no-print">
 <div class="field"><label for="fromDate">From Date</label><input id="fromDate" type="date"></div>
 <div class="field"><label for="toDate">To Date</label><input id="toDate" type="date"></div>
-<div class="field"><label for="search">Search</label><input id="search" placeholder="Brand, order, exporter, LC..."></div>
+<div class="field"><label for="search">Search</label><input id="search" placeholder="Concern, brand, order, exporter, LC..."></div>
 <div class="field"><label for="statusFilter">Import Status</label><select id="statusFilter"><option value="">All Statuses</option><option>PI & Packing List received from exporter</option><option>LC Open</option><option>Transit</option><option>Received in Modina Warehouse</option></select></div>
+<div class="field"><label for="concernFilter">Concern Name</label><select id="concernFilter"><option value="">All Concern Names</option><option>Ahad Traders</option><option>Hossain International</option><option>Jam Jam Auto</option><option>Master Cycle</option><option>Masters Corporation</option><option>Modina Auto Parts Ltd.</option><option>Modina Autos, Dhaka</option><option>Modina Autos, Jashore</option><option>Modina Rim & Parts Ltd.</option><option>Tazim Enterprise</option></select></div>
 <div class="actions"><button id="applyBtn">Apply Filters</button><button id="resetBtn" class="secondary">Reset</button></div>
 </div>
 <div class="actions no-print" style="margin-top:14px"><button id="printBtn">Print / Save PDF</button><button id="csvBtn" class="secondary">Export Excel (.xlsx)</button><button id="refreshBtn" class="secondary">Refresh Data</button></div>
@@ -67,7 +68,7 @@ table{width:100%;border-collapse:collapse;min-width:850px;background:#fff}th,td{
 <h1>Company Reports</h1><p class="muted" id="reportDate">All records • Filter by date or keyword</p>
 <div class="tabs no-print"><button class="active" data-tab="all">Full Report</button><button data-tab="orders">Purchase Orders</button><button data-tab="imports">Import Report</button></div>
 <div id="ordersSection"><h2>Purchase Order Report</h2><div class="table-wrap"><table><thead><tr><th>#</th><th>Order Date</th><th>Order Number</th><th>Exporter</th><th>Brand</th><th>Item Description</th><th>Qty</th><th>Total Value</th><th>Net Weight</th></tr></thead><tbody id="ordersBody"></tbody></table></div></div>
-<div id="importsSection" style="margin-top:22px"><h2>Import Report</h2><div class="table-wrap"><table><thead><tr><th>#</th><th>Import Date</th><th>Brand</th><th>Item Description</th><th>Qty</th><th>USD Value</th><th>Net Weight</th><th>Order No.</th><th>LC Number</th><th>LC Date</th><th>Status</th><th>Comment</th></tr></thead><tbody id="importsBody"></tbody></table></div></div>
+<div id="importsSection" style="margin-top:22px"><h2>Import Report</h2><div class="table-wrap"><table><thead><tr><th>#</th><th>Import Date</th><th>Concern Name</th><th>Brand</th><th>Item Description</th><th>Qty</th><th>USD Value</th><th>Net Weight</th><th>Order No.</th><th>LC Number</th><th>LC Date</th><th>Status</th><th>Comment</th></tr></thead><tbody id="importsBody"></tbody></table></div></div>
 <div id="emptyMsg" class="muted hidden" style="padding:18px 0">No records match the selected filters.</div>
 </div>
 </section>
@@ -96,41 +97,42 @@ async function loadData(){
 }
 function withinDate(date,from,to){if(!date)return !from&&!to;const d=String(date).slice(0,10);return (!from||d>=from)&&(!to||d<=to);}
 function applyFilters(){
- const from=$('fromDate').value,to=$('toDate').value,q=$('search').value.trim().toLowerCase(),status=$('statusFilter').value;
+ const from=$('fromDate').value,to=$('toDate').value,q=$('search').value.trim().toLowerCase(),status=$('statusFilter').value,concern=$('concernFilter').value;
  visibleOrders=orders.filter(r=>withinDate(r.order_date,from,to)&&(!q||[r.order_number,r.exporter_info,r.brand_name,r.item_description].some(x=>val(x).toLowerCase().includes(q))));
- visibleImports=imports.filter(r=>withinDate(r.import_date,from,to)&&(!status||r.import_status===status)&&(!q||[r.brand,r.item_description,r.order_number,r.exporter_info,r.lc_number,r.comment,r.import_status].some(x=>val(x).toLowerCase().includes(q))));
+ visibleImports=imports.filter(r=>withinDate(r.import_date,from,to)&&(!status||r.import_status===status)&&(!concern||r.concern_name===concern)&&(!q||[r.concern_name,r.brand,r.item_description,r.order_number,r.exporter_info,r.lc_number,r.comment,r.import_status].some(x=>val(x).toLowerCase().includes(q))));
  render();
 }
 function render(){
  $('orderCount').textContent=visibleOrders.length;$('importCount').textContent=visibleImports.length;
- $('poValue').textContent=fmt(visibleOrders.reduce((s,r)=>s+Number(r.total_value||0),0));
+ const poCurrencies=[...new Set(visibleOrders.map(r=>val(r.total_value_currency).trim()).filter(Boolean))];
+ $('poValue').textContent=poCurrencies.length>1?'Mixed currencies':fmt(visibleOrders.reduce((s,r)=>s+Number(r.total_value||0),0))+(poCurrencies[0]?' '+poCurrencies[0]:'');
  $('importValue').textContent=fmt(visibleImports.reduce((s,r)=>s+Number(r.usd_value||0),0));
  $('reportDate').textContent=`Filtered report • ${new Date().toLocaleString()}`;
- $('ordersBody').innerHTML=visibleOrders.map((r,n)=>`<tr><td>${n+1}</td><td>${esc(r.order_date)}</td><td>${esc(r.order_number)}</td><td>${esc(r.exporter_info)}</td><td>${esc(r.brand_name)}</td><td>${esc(r.item_description)}</td><td>${esc(r.qty)}</td><td>${esc(r.total_value)}</td><td>${esc(r.net_weight)}</td></tr>`).join('');
- $('importsBody').innerHTML=visibleImports.map((r,n)=>`<tr><td>${n+1}</td><td>${esc(r.import_date)}</td><td>${esc(r.brand)}</td><td>${esc(r.item_description)}</td><td>${esc(r.item_qty)}</td><td>${esc(r.usd_value)}</td><td>${esc(r.net_weight)}</td><td>${esc(r.order_number)}</td><td>${esc(r.lc_number)}</td><td>${esc(r.lc_date)}</td><td><span class="status">${esc(r.import_status)}</span></td><td>${esc(r.comment)}</td></tr>`).join('');
+ $('ordersBody').innerHTML=visibleOrders.map((r,n)=>`<tr><td>${n+1}</td><td>${esc(r.order_date)}</td><td>${esc(r.order_number)}</td><td>${esc(r.exporter_info)}</td><td>${esc(r.brand_name)}</td><td>${esc(r.item_description)}</td><td>${esc(r.qty)} ${esc(r.qty_unit)}</td><td>${esc(r.total_value)} ${esc(r.total_value_currency)}</td><td>${esc(r.net_weight)} ${esc(r.net_weight_unit)}</td></tr>`).join('');
+ $('importsBody').innerHTML=visibleImports.map((r,n)=>`<tr><td>${n+1}</td><td>${esc(r.import_date)}</td><td><span class="concern-name">${esc(r.concern_name)}</span></td><td>${esc(r.brand)}</td><td>${esc(r.item_description)}</td><td>${esc(r.item_qty)} ${esc(r.item_qty_unit)}</td><td>${esc(r.usd_value)}</td><td>${esc(r.net_weight)} ${esc(r.net_weight_unit)}</td><td>${esc(r.order_number)}</td><td>${esc(r.lc_number)}</td><td>${esc(r.lc_date)}</td><td><span class="status">${esc(r.import_status)}</span></td><td>${esc(r.comment)}</td></tr>`).join('');
  $('ordersSection').classList.toggle('hidden',activeTab==='imports');$('importsSection').classList.toggle('hidden',activeTab==='orders');
  $('emptyMsg').classList.toggle('hidden',visibleOrders.length+visibleImports.length>0);
 }
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='Signing in...';const {data,error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error){$('loginError').textContent=error.message;return;}showApp(data.user);await loadData();});
 $('logoutBtn').addEventListener('click',async()=>{await db.auth.signOut();location.reload();});
 $('applyBtn').onclick=applyFilters;$('search').addEventListener('keydown',e=>{if(e.key==='Enter')applyFilters();});
-$('resetBtn').onclick=()=>{$('fromDate').value='';$('toDate').value='';$('search').value='';$('statusFilter').value='';applyFilters();};
+$('resetBtn').onclick=()=>{$('fromDate').value='';$('toDate').value='';$('search').value='';$('statusFilter').value='';$('concernFilter').value='';applyFilters();};
 $('refreshBtn').onclick=loadData;$('printBtn').onclick=()=>window.print();
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{activeTab=b.dataset.tab;document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));render();});
 $('csvBtn').onclick=()=>{
  if(!window.XLSX){$('loadError').textContent='Excel library could not load. Please check your internet connection and try again.';return;}
  const fullRows=[
-  ['Report Type','Date','Order Number','Exporter','Brand','Item Description','Quantity','Value (USD)','Net Weight','LC Number','LC Date','Import Status','Comment'],
-  ...visibleOrders.map(r=>['Purchase Order',r.order_date,r.order_number,r.exporter_info,r.brand_name,r.item_description,r.qty,r.total_value,r.net_weight,'','','','']),
-  ...visibleImports.map(r=>['Import',r.import_date,r.order_number,r.exporter_info,r.brand,r.item_description,r.item_qty,r.usd_value,r.net_weight,r.lc_number,r.lc_date,r.import_status,r.comment])
+  ['Report Type','Date','Order Number','Exporter','Concern Name','Brand','Item Description','Quantity','Quantity Unit','Value','Currency','Net Weight','Weight Unit','LC Number','LC Date','Import Status','Comment'],
+  ...visibleOrders.map(r=>['Purchase Order',r.order_date,r.order_number,r.exporter_info,'',r.brand_name,r.item_description,r.qty,r.qty_unit,r.total_value,r.total_value_currency,r.net_weight,r.net_weight_unit,'','','','']),
+  ...visibleImports.map(r=>['Import',r.import_date,r.order_number,r.exporter_info,r.concern_name,r.brand,r.item_description,r.item_qty,r.item_qty_unit,r.usd_value,'USD',r.net_weight,r.net_weight_unit,r.lc_number,r.lc_date,r.import_status,r.comment])
  ];
  const orderRows=[
-  ['Order Date','Order Number','Exporter Info','Brand Name','Item Description','Qty','Total Value','Net Weight'],
-  ...visibleOrders.map(r=>[r.order_date,r.order_number,r.exporter_info,r.brand_name,r.item_description,r.qty,r.total_value,r.net_weight])
+  ['Order Date','Order Number','Exporter Info','Brand Name','Item Description','Qty','Qty Unit','Total Value','Currency','Net Weight','Weight Unit'],
+  ...visibleOrders.map(r=>[r.order_date,r.order_number,r.exporter_info,r.brand_name,r.item_description,r.qty,r.qty_unit,r.total_value,r.total_value_currency,r.net_weight,r.net_weight_unit])
  ];
  const importRows=[
-  ['Import Date','Brand','Item Description','Item Qty','USD Value','Net Weight','Order Number','Order Date','Checked By','Checking Date','Exporter Info','LC Number','LC Date','Import Status','Comment'],
-  ...visibleImports.map(r=>[r.import_date,r.brand,r.item_description,r.item_qty,r.usd_value,r.net_weight,r.order_number,r.order_date,r.checked_by,r.checking_date,r.exporter_info,r.lc_number,r.lc_date,r.import_status,r.comment])
+  ['Import Date','Concern Name','Brand','Item Description','Item Qty','Qty Unit','USD Value','Net Weight','Weight Unit','Order Number','Order Date','Checked By','Checking Date','Exporter Info','LC Number','LC Date','Import Status','Comment'],
+  ...visibleImports.map(r=>[r.import_date,r.concern_name,r.brand,r.item_description,r.item_qty,r.item_qty_unit,r.usd_value,r.net_weight,r.net_weight_unit,r.order_number,r.order_date,r.checked_by,r.checking_date,r.exporter_info,r.lc_number,r.lc_date,r.import_status,r.comment])
  ];
  const wb=XLSX.utils.book_new();
  const addSheet=(name,rows)=>{const ws=XLSX.utils.aoa_to_sheet(rows);ws['!autofilter']={ref:ws['!ref']};ws['!cols']=rows[0].map((h,i)=>({wch:Math.min(34,Math.max(14,String(h||'').length+3))}));XLSX.utils.book_append_sheet(wb,ws,name);};
