@@ -24,7 +24,7 @@
     --border: #e5eaf2;
     --green: #16a36a;
     --red: #dc3545;
-    --shadow: 0 5px 22px rgba(15, 40, 75, .07);
+    --shadow: 0 5px 22px rgba(15,40,75,.07);
 }
 
 * {
@@ -41,7 +41,7 @@ body {
 
 /* HEADER */
 header {
-    background: linear-gradient(120deg, #092847, #123b68);
+    background: linear-gradient(120deg,#092847,#123b68);
     color: white;
     padding: 15px 4%;
     display: flex;
@@ -119,6 +119,7 @@ header {
     height: 9px;
     border-radius: 50%;
     background: #fbbf24;
+    flex-shrink: 0;
 }
 
 .dot.online { background: #22c55e; }
@@ -151,7 +152,8 @@ header {
     margin-top: 7px;
 }
 
-.refresh-btn, .export-btn {
+.refresh-btn,
+.export-btn {
     border: 0;
     padding: 11px 16px;
     border-radius: 9px;
@@ -164,15 +166,22 @@ header {
     transition: .2s;
 }
 
-.refresh-btn:hover, .export-btn:hover {
+.refresh-btn:hover,
+.export-btn:hover {
     background: var(--primary-dark);
     transform: translateY(-2px);
+}
+
+.refresh-btn:disabled {
+    opacity: .65;
+    cursor: wait;
+    transform: none;
 }
 
 /* KPI CARDS */
 .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3,1fr);
     gap: 18px;
     margin-bottom: 23px;
 }
@@ -424,7 +433,7 @@ tbody tr:hover {
 
 .share-fill {
     height: 100%;
-    background: linear-gradient(90deg, #2563eb, #0d9488);
+    background: linear-gradient(90deg,#2563eb,#0d9488);
     border-radius: 10px;
 }
 
@@ -457,16 +466,36 @@ tbody tr:hover {
     color: var(--muted);
 }
 
+/* LAST UPDATED */
+.update-info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 8px 13px;
+    background: #f0f7ff;
+    border: 1px solid #dceafe;
+    border-radius: 8px;
+    color: #345779;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.update-info i {
+    color: var(--blue);
+}
+
 /* FOOTER */
 footer {
     text-align: center;
     padding: 24px;
     color: var(--muted);
     font-size: 11px;
+    line-height: 1.8;
 }
 
 /* MOBILE */
-@media(max-width: 850px) {
+@media(max-width:850px) {
     .content-grid {
         grid-template-columns: 1fr;
     }
@@ -476,7 +505,7 @@ footer {
     }
 }
 
-@media(max-width: 600px) {
+@media(max-width:600px) {
     header {
         padding: 13px 4%;
     }
@@ -511,8 +540,17 @@ footer {
         padding: 20px 4%;
     }
 
+    .page-heading {
+        align-items: flex-start;
+    }
+
     .page-heading h1 {
         font-size: 20px;
+    }
+
+    .refresh-btn {
+        width: 100%;
+        padding: 13px;
     }
 
     .kpi-grid {
@@ -528,7 +566,8 @@ footer {
         font-size: 23px;
     }
 
-    .panel, .table-panel {
+    .panel,
+    .table-panel {
         padding: 16px;
     }
 
@@ -542,10 +581,22 @@ footer {
 
     .search-box {
         max-width: 100%;
+        width: 100%;
     }
 
     .export-btn {
         width: 100%;
+        padding: 13px;
+    }
+
+    .update-info {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .rank-value {
+        font-size: 11px;
     }
 }
 </style>
@@ -587,7 +638,7 @@ footer {
             <p>Monitor brand-wise inventory value and stock distribution.</p>
         </div>
 
-        <button class="refresh-btn" onclick="loadData()">
+        <button class="refresh-btn" id="refreshBtn" onclick="loadData()">
             ↻ Refresh Data
         </button>
     </div>
@@ -664,6 +715,7 @@ footer {
         </div>
 
         <div class="table-controls">
+
             <div class="search-box">
                 <span class="search-icon">⌕</span>
                 <input
@@ -677,6 +729,7 @@ footer {
             <button class="export-btn" onclick="exportCSV()">
                 ↓ Export CSV
             </button>
+
         </div>
 
         <div class="table-wrap">
@@ -705,52 +758,119 @@ footer {
 </main>
 
 <footer>
-    © <span id="year"></span> Modina Auto Parts Ltd. | Brand Stock Management Dashboard
+    © <span id="year"></span> Modina Auto Parts Ltd.
+    | Brand Stock Management Dashboard
+
     <br><br>
-    Last Updated: <span id="lastUpdated">Not updated yet</span>
+
+    <div class="update-info">
+        <i data-lucide="calendar-clock" width="15"></i>
+        <span>Google Sheet Last Updated:</span>
+        <strong id="lastUpdated">Loading...</strong>
+    </div>
+
+    <br>
+    <span>Dashboard auto-refreshes every 5 minutes.</span>
 </footer>
 
 <script>
+
 /* GOOGLE APPS SCRIPT API */
 const API_URL = "https://script.google.com/macros/s/AKfycbzJTbQS9HJo5UUyMstZftSVBAtSbGCDciBCiJKM0YVOTWpEPeqSc-eHJgtVzE9_3j4CgQ/exec";
 
 let stockData = [];
 let chartInstance = null;
+let isLoading = false;
 
 const money = value =>
     "৳" + Number(value || 0).toLocaleString("en-IN", {
         maximumFractionDigits: 2
     });
 
-function setConnection(status, message) {
-    document.getElementById("dot").className = "dot " + status;
-    document.getElementById("connection").textContent = message;
+/* FORMAT GOOGLE SHEET UPDATE TIME */
+function formatUpdateTime(value) {
+
+    if (!value || value === "Not updated yet") {
+        return "Not updated yet";
+    }
+
+    const date = new Date(value);
+
+    if (isNaN(date.getTime())) {
+        return "Update time unavailable";
+    }
+
+    return date.toLocaleString("en-GB", {
+        timeZone: "Asia/Dhaka",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+    });
 }
 
+/* CONNECTION STATUS */
+function setConnection(status, message) {
+
+    document.getElementById("dot").className =
+        "dot " + status;
+
+    document.getElementById("connection").textContent =
+        message;
+}
+
+/* LOAD DATA */
 function loadData() {
+
+    if (isLoading) return;
+
+    isLoading = true;
+
+    const refreshBtn = document.getElementById("refreshBtn");
+
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = "Loading...";
+
     setConnection("", "Connecting...");
 
     const callbackName = "stockCallback_" + Date.now();
 
     const script = document.createElement("script");
 
+    let completed = false;
+
     const timeout = setTimeout(() => {
-        cleanup();
+        finish();
         setConnection("offline", "Connection Failed");
     }, 20000);
 
-    function cleanup() {
+    function finish() {
+
+        if (completed) return;
+
+        completed = true;
+
         clearTimeout(timeout);
         script.remove();
+
         try {
             delete window[callbackName];
         } catch (e) {
             window[callbackName] = undefined;
         }
+
+        isLoading = false;
+
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = "↻ Refresh Data";
     }
 
     window[callbackName] = function(response) {
-        cleanup();
+
+        finish();
 
         if (!response || response.success === false) {
             setConnection("offline", "Data Error");
@@ -762,8 +882,13 @@ function loadData() {
             : (response.data || response.records || []);
 
         stockData = rows.map(row => {
+
             const brand = String(
-                row.brand ?? row.Brand ?? row.BRAND ?? row[0] ?? ""
+                row.brand ??
+                row.Brand ??
+                row.BRAND ??
+                row[0] ??
+                ""
             ).trim();
 
             const rawValue =
@@ -779,15 +904,25 @@ function loadData() {
                 String(rawValue).replace(/[৳,\s]/g, "")
             ) || 0;
 
-            return { brand, value };
+            return {
+                brand: brand,
+                value: value
+            };
+
         }).filter(item => item.brand !== "");
 
         stockData.sort((a, b) => b.value - a.value);
 
         updateDashboard();
+
         setConnection("online", "Connected to Stock Sheets");
+
+        /* IMPORTANT:
+           This shows actual Google Sheet update time,
+           not dashboard refresh time.
+        */
         document.getElementById("lastUpdated").textContent =
-            new Date().toLocaleString();
+            formatUpdateTime(response.lastUpdated);
 
     };
 
@@ -796,19 +931,31 @@ function loadData() {
         "callback=" + callbackName;
 
     script.onerror = function() {
-        cleanup();
+
+        finish();
+
         setConnection("offline", "Connection Failed");
+
     };
 
     document.body.appendChild(script);
 }
 
+/* UPDATE DASHBOARD */
 function updateDashboard() {
-    const total = stockData.reduce((sum, item) => sum + item.value, 0);
 
-    const highest = stockData[0] || { brand: "-", value: 0 };
+    const total = stockData.reduce(
+        (sum, item) => sum + item.value,
+        0
+    );
 
-    document.getElementById("totalStock").textContent = money(total);
+    const highest = stockData[0] || {
+        brand: "-",
+        value: 0
+    };
+
+    document.getElementById("totalStock").textContent =
+        money(total);
 
     document.getElementById("totalBrands").textContent =
         stockData.length.toLocaleString();
@@ -824,7 +971,9 @@ function updateDashboard() {
     renderTable();
 }
 
+/* CHART */
 function renderChart() {
+
     const top10 = stockData.slice(0, 10);
 
     const ctx = document.getElementById("stockChart");
@@ -834,83 +983,150 @@ function renderChart() {
     }
 
     chartInstance = new Chart(ctx, {
+
         type: "bar",
 
         data: {
+
             labels: top10.map(item => item.brand),
 
             datasets: [{
+
                 label: "Stock Value",
+
                 data: top10.map(item => item.value),
+
                 backgroundColor: [
-                    "#123b68", "#2563eb", "#0d9488",
-                    "#3b82f6", "#14b8a6", "#60a5fa",
-                    "#2dd4bf", "#64748b", "#818cf8", "#94a3b8"
+                    "#123b68",
+                    "#2563eb",
+                    "#0d9488",
+                    "#3b82f6",
+                    "#14b8a6",
+                    "#60a5fa",
+                    "#2dd4bf",
+                    "#64748b",
+                    "#818cf8",
+                    "#94a3b8"
                 ],
+
                 borderRadius: 5,
                 barThickness: 16
+
             }]
+
         },
 
         options: {
+
             indexAxis: "y",
             responsive: true,
             maintainAspectRatio: false,
 
             plugins: {
-                legend: { display: false },
+
+                legend: {
+                    display: false
+                },
 
                 tooltip: {
+
                     callbacks: {
+
                         label: context => money(context.raw)
+
                     }
+
                 }
+
             },
 
             scales: {
+
                 x: {
+
                     beginAtZero: true,
+
                     ticks: {
-                        callback: value => "৳" +
-                            Number(value).toLocaleString("en-IN")
+
+                        callback: value =>
+                            "৳" + Number(value).toLocaleString("en-IN")
+
                     },
-                    grid: { color: "#edf1f7" }
+
+                    grid: {
+                        color: "#edf1f7"
+                    }
+
                 },
 
                 y: {
-                    grid: { display: false },
+
+                    grid: {
+                        display: false
+                    },
+
                     ticks: {
-                        font: { size: 11 }
+                        font: {
+                            size: 11
+                        }
                     }
+
                 }
+
             }
+
         }
+
     });
+
 }
 
+/* TOP BRAND RANKING */
 function renderRanking() {
+
     const list = document.getElementById("rankingList");
 
     if (!stockData.length) {
-        list.innerHTML = '<div class="empty">No data available</div>';
+
+        list.innerHTML =
+            '<div class="empty">No data available</div>';
+
         return;
     }
 
     list.innerHTML = stockData.slice(0, 6).map((item, index) => `
-        <div class="rank-item">
-            <div class="rank-number">${index + 1}</div>
 
-            <div class="rank-info">
-                <strong>${escapeHTML(item.brand)}</strong>
-                <small>Brand Stock Value</small>
+        <div class="rank-item">
+
+            <div class="rank-number">
+                ${index + 1}
             </div>
 
-            <div class="rank-value">${money(item.value)}</div>
+            <div class="rank-info">
+
+                <strong>
+                    ${escapeHTML(item.brand)}
+                </strong>
+
+                <small>
+                    Brand Stock Value
+                </small>
+
+            </div>
+
+            <div class="rank-value">
+                ${money(item.value)}
+            </div>
+
         </div>
+
     `).join("");
+
 }
 
+/* BRAND TABLE */
 function renderTable() {
+
     const search = document.getElementById("searchInput")
         .value.toLowerCase().trim();
 
@@ -918,7 +1134,10 @@ function renderTable() {
         item.brand.toLowerCase().includes(search)
     );
 
-    const total = stockData.reduce((sum, item) => sum + item.value, 0);
+    const total = stockData.reduce(
+        (sum, item) => sum + item.value,
+        0
+    );
 
     document.getElementById("recordCount").textContent =
         filtered.length + " Records";
@@ -926,14 +1145,20 @@ function renderTable() {
     const tbody = document.getElementById("stockTable");
 
     if (!filtered.length) {
+
         tbody.innerHTML =
             '<tr><td colspan="6" class="empty">No matching brand found</td></tr>';
+
         return;
     }
 
     tbody.innerHTML = filtered.map(item => {
+
         const rank = stockData.indexOf(item) + 1;
-        const share = total > 0 ? (item.value / total) * 100 : 0;
+
+        const share = total > 0
+            ? (item.value / total) * 100
+            : 0;
 
         const status = share >= 10
             ? "high"
@@ -948,55 +1173,99 @@ function renderTable() {
                 : "Low";
 
         return `
+
             <tr>
-                <td><strong>#${rank}</strong></td>
-                <td class="brand-name">${escapeHTML(item.brand)}</td>
-                <td class="stock-value">${money(item.value)}</td>
-                <td>${share.toFixed(2)}%</td>
+
                 <td>
-                    <div class="share-bar">
-                        <div class="share-fill"
-                             style="width:${Math.min(share, 100)}%">
-                        </div>
-                    </div>
+                    <strong>#${rank}</strong>
                 </td>
+
+                <td class="brand-name">
+                    ${escapeHTML(item.brand)}
+                </td>
+
+                <td class="stock-value">
+                    ${money(item.value)}
+                </td>
+
                 <td>
+                    ${share.toFixed(2)}%
+                </td>
+
+                <td>
+
+                    <div class="share-bar">
+
+                        <div class="share-fill"
+                            style="width:${Math.min(share, 100)}%">
+                        </div>
+
+                    </div>
+
+                </td>
+
+                <td>
+
                     <span class="status ${status}">
                         ${statusText}
                     </span>
+
                 </td>
+
             </tr>
+
         `;
+
     }).join("");
+
 }
 
+/* EXPORT CSV */
 function exportCSV() {
+
     if (!stockData.length) {
+
         alert("No data available to export.");
+
         return;
     }
 
-    const total = stockData.reduce((sum, item) => sum + item.value, 0);
+    const total = stockData.reduce(
+        (sum, item) => sum + item.value,
+        0
+    );
 
     const rows = [
+
         ["Rank", "Brand", "Stock Value", "Stock Share"]
+
     ];
 
     stockData.forEach((item, index) => {
-        const share = total > 0 ? item.value / total * 100 : 0;
+
+        const share = total > 0
+            ? item.value / total * 100
+            : 0;
 
         rows.push([
+
             index + 1,
             item.brand,
             item.value,
             share.toFixed(2) + "%"
+
         ]);
+
     });
 
     const csv = "\uFEFF" + rows.map(row =>
+
         row.map(value =>
+
             '"' + String(value).replace(/"/g, '""') + '"'
+
         ).join(",")
+
     ).join("\n");
 
     const blob = new Blob([csv], {
@@ -1004,35 +1273,47 @@ function exportCSV() {
     });
 
     const url = URL.createObjectURL(blob);
+
     const link = document.createElement("a");
 
     link.href = url;
     link.download = "MAPL_Brand_Stock_Report.csv";
+
     link.click();
 
     URL.revokeObjectURL(url);
+
 }
 
+/* HTML SECURITY */
 function escapeHTML(value) {
+
     return String(value).replace(/[&<>"']/g, char => ({
+
         "&": "&amp;",
         "<": "&lt;",
         ">": "&gt;",
         '"': "&quot;",
         "'": "&#39;"
+
     })[char]);
+
 }
 
+/* INITIALIZE */
 document.getElementById("year").textContent =
     new Date().getFullYear();
-
-loadData();
-
-setInterval(loadData, 5 * 60 * 1000);
 
 if (window.lucide) {
     lucide.createIcons();
 }
+
+/* FIRST LOAD */
+loadData();
+
+/* AUTO REFRESH EVERY 5 MINUTES */
+setInterval(loadData, 5 * 60 * 1000);
+
 </script>
 
 </body>
